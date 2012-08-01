@@ -14,7 +14,7 @@ function! s:foldtext(bufnr, lnum, line)
 	return matchstr(a:line, "\"\\s*\\zs.*\\ze".split(&foldmarker, ",")[0])
 endfunction
 
-let g:Unite_fold_foldtext = get(g:, "unite_fold_foldtext", function("s:foldtext"))
+let g:Unite_fold_foldtext = get(g:, "Unite_fold_foldtext", function("s:foldtext"))
 let g:unite_fold_indent_space = get(g:, "unite_fold_indent_space", "  ")
 
 
