@@ -16,9 +16,9 @@ function! s:is_new_folding_start(lnum)
 	let fstart = foldclosed(a:lnum)
 	if fstart == -1 " the fold is opened
 		call cursor(a:lnum, 1)
-		normal zc
+		normal! zc
 		let fstart = foldclosed(a:lnum)
-		normal zo
+		normal! zo
 	endif
 	return fstart == a:lnum
 endfunction
