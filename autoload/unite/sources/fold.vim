@@ -23,9 +23,28 @@ function! s:is_new_folding_start(lnum)
 	return fstart == a:lnum
 endfunction
 
+function! s:foldmarker_begin(bufnr)
+        let buf_winnr = bufwinnr(a:bufnr)
+        if buf_winnr != -1
+                let foldmarker_begin = split(getwinvar(buf_winnr, '&foldmarker'), ',')[0]
+        else
+                let foldmarker_begin = split(&foldmarker, ',')[0]
+        endif
+        return foldmarker_begin
+endfunction
+
+function! s:comment_begin(bufnr)
+        let [comment_begin, comment_end] = split(getbufvar(a:bufnr, "&commentstring"), '\V\C%s', 1)
+        return comment_begin
+endfunction
+
 function! s:foldlist(bufnr)
 	if &foldmethod == 'marker'
-		return filter(map(getbufline(a:bufnr, 1, "$"), '{ "line" : v:val, "lnum" : v:key+1 }'), "v:val.line =~ '^\".*'.split(&foldmarker, ',')[0]")
+                let comment_begin    = s:comment_begin(a:bufnr)
+                let foldmarker_begin = s:foldmarker_begin(a:bufnr)
+                return filter(map(getbufline(a:bufnr, 1, "$"),
+                        \ '{ "line" : v:val, "lnum" : v:key+1 }'),
+                        \ "v:val.line =~ '\\V\\_^\\s\\*' . comment_begin . '\\.\\*' . foldmarker_begin . '\\d'")
 	else
 		let orig_cursor = getpos('.')
 		let lnum = 1
@@ -58,7 +77,10 @@ function! s:foldtext(bufnr, val)
 	if has_key(a:val, 'word')
 		return a:val.word
 	else
-		return matchstr(a:val.line, "\"\\s*\\zs.*\\ze" . split(&foldmarker, ",")[0])
+                let comment_begin    = s:comment_begin(a:bufnr)
+                let foldmarker_begin = s:foldmarker_begin(a:bufnr)
+		return matchstr(a:val.line,
+                    \ '\V' . comment_begin .  '\s\*\zs\.\*\ze' . foldmarker_begin)
 	end
 endfunction
 
